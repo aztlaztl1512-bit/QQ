@@ -1,0 +1,71 @@
+import os
+from PIL import Image, ImageDraw, ImageFont
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+class QudratGenerator:
+    def __init__(self, font_path):
+        self.font_path = font_path
+        # الألوان المستخدمة في التصميم
+        self.colors = {
+            "bg": (255, 255, 255),
+            "sidebar": (205, 126, 110),
+            "box": (245, 245, 245),
+            "footer": (255, 82, 82),
+            "text_q": (50, 50, 100),
+            "text_opt": (0, 0, 0),
+            "white": (255, 255, 255)
+        }
+
+    def _format_ar(self, text):
+        """تجهيز النص العربي للعرض الصحيح"""
+        reshaped = arabic_reshaper.reshape(text)
+        return get_display(reshaped)
+
+    def generate_image(self, question, options, correct_ans, output_name):
+        width, height = 1200, 630
+        img = Image.new('RGB', (width, height), color=self.colors["bg"])
+        draw = ImageDraw.Draw(img)
+
+        # تحميل الخطوط بأحجام مختلفة
+        font_q = ImageFont.truetype(self.font_path, 35)
+        font_opt = ImageFont.truetype(self.font_path, 30)
+        font_res = ImageFont.truetype(self.font_path, 45)
+
+        # رسم الهيكل (الشريط الجانبي ومربع السؤال)
+        draw.rounded_rectangle([1020, 150, 1150, 520], radius=25, fill=self.colors["sidebar"])
+        draw.rounded_rectangle([100, 150, 1000, 480], radius=20, fill=self.colors["box"])
+        draw.rounded_rectangle([100, 480, 1000, 530], radius=5, fill=self.colors["footer"])
+
+        # كتابة السؤال
+        draw.text((970, 190), self._format_ar(question), fill=self.colors["text_q"], font=font_q, anchor="rm")
+
+        # توزيع الخيارات (أ، ب، ج، د)
+        labels = ['أ', 'ب', 'ج', 'د']
+        coords = [(750, 300), (350, 300), (750, 380), (350, 380)]
+        
+        for i, (opt, pos) in enumerate(zip(options, coords)):
+            txt = f"{labels[i]}) {opt}"
+            draw.text(pos, self._format_ar(txt), fill=self.colors["text_opt"], font=font_opt, anchor="rm")
+
+        # كتابة الإجابة الصحيحة في الأسفل
+        ans_txt = f"الإجابة: {correct_ans}"
+        draw.text((550, 505), self._format_ar(ans_txt), fill=self.colors["white"], font=font_res, anchor="mm")
+
+        img.save(output_name)
+        return img
+
+# --- تشغيل الكود ---
+if __name__ == "__main__":
+    # تأكد من تحميل خط Tajawal-Bold.ttf أو أي خط عربي وضعه في مجلد المشروع
+    generator = QudratGenerator("Tajawal-Bold.ttf")
+
+    data = {
+        "question": "عند مخالطة شخص مصاب بالإنفلونزا لمجموعة غير مصابة وفقاً للفقرة (5) فإن ذلك يؤدي إلى ....",
+        "options": ["حضانة الفيروس", "انتقال الفيروس", "إضعاف الفيروس", "اكتشاف الفيروس"],
+        "correct": "ب"
+    }
+
+    # إنشاء الصورة
+    generator.generate_image(data["question"], data["options"], data["correct"], "result.png")
+    print("تم إنشاء الصورة بنجاح!")

@@ -67,7 +67,7 @@ class QudratGenerator:
 # --- تجربة الكود ---
 if __name__ == "__main__":
     # ملاحظة: حمل خط Tajawal-Bold.ttf وضعه بجانب الكود
-    generator = QudratGenerator("Tajawal-Bold.ttf")
+    generator = QudratGenerator("Tajawal-Bold.ttf.ttf")
 
     my_data = {
         "question": "عند مخالطة شخص مصاب بالإنفلونزا لمجموعة غير مصابة وفقاً للفقرة (5) فإن ذلك يؤدي إلى ....",
